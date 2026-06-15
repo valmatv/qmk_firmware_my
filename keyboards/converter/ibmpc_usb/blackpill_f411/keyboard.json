@@ -1,0 +1,5 @@
+{
+    "processor": "STM32F411",
+    "bootloader": "stm32-dfu",
+    "development_board": "blackpill_f411"
+}

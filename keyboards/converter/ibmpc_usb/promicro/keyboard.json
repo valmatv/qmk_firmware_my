@@ -1,7 +1,4 @@
 {
     "processor": "atmega32u4",
-    "bootloader": "caterina",
-    "features": {
-        "console": true
-    }
+    "bootloader": "caterina"
 }

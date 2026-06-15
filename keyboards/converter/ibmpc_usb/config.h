@@ -18,13 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-/* USB Device descriptor parameter */
-#define VENDOR_ID    0xFEED
-#define PRODUCT_ID   0x6536
-#define DEVICE_VER   0x0101
-#define MANUFACTURER "TMK"
-#define PRODUCT      "IBM PC USB Converter"
-
 /* key matrix size: 8x16 = 128 universal positions */
 #define MATRIX_ROWS 8
 #define MATRIX_COLS 16
