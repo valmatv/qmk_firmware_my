@@ -241,3 +241,68 @@ This file may contain advanced hardware configuration. A QMK Collaborator must r
 - **Do not review `<keyboard>.c` content in detail** — flag its presence and defer to a QMK Collaborator
 
 This is meant as a **first-pass review** to catch common issues before human review. Complex architectural decisions, code quality, and subjective assessments still require human QMK Collaborator review.
+
+---
+
+<!-- IBM PC USB Converter — project-specific Copilot instructions -->
+<!-- applyTo: "keyboards/converter/ibmpc_usb/**" -->
+
+## IBM PC USB Converter (`keyboards/converter/ibmpc_usb/`)
+
+This converter translates IBM PC keyboard protocols (XT / AT / PS2 / Terminal — Scan Code Sets 1, 2, 3) to USB HID. The authoritative C++ reference is `tmk_keyboard/tmk_core/protocol/ibmpc.cpp` by Jun WAKO.
+
+### Language and platform rules
+
+- **C only** — no C++, no classes, no `new`, no references
+- **GPIO abstraction:**
+  - AVR: use `gpio.h` wrappers — `writePinHigh/Low()`, `setPinInput/Output()`, `readPin()`
+  - ARM/ChibiOS: use PAL — `palSetLineMode()`, `palWriteLine()`, `palReadLine()`, `palEnableLineEvent()`
+  - Never use raw AVR registers (`DDRD`, `PORTD`, `PIND`) in shared (non-AVR-specific) code
+- **Global naming:** protocol state globals use `ibmpc_` prefix: `ibmpc_error`, `ibmpc_protocol`, `ibmpc_isr_debug`
+- **No Vial-specific code** in protocol or matrix files
+
+### Key files
+
+| File | Purpose |
+|---|---|
+| `ibmpc.c` | Protocol driver — ISR, `host_send`, `host_recv`, `host_set_led` |
+| `ibmpc.h` | Top-level platform selector; each sub-target provides its own |
+| `matrix.c` | Scan-code state machine: INIT → WAIT_SETTLE → AT_RESET → READ_ID → SETUP → LOOP |
+| `ibmpc_usb.c` | PROGMEM scan-code → unimap tables for CS1/CS2/CS3 |
+| `ibmpc_usb.h` | LAYOUT macro (8×16 = 128 keys), `keyboard_kind_t` enum |
+| `ringbuf.h` | Header-only ring buffer (16-byte, must be power-of-2 size) |
+| `promicro/ibmpc.h` | AVR INT1 / port-register macros |
+| `blackpill_f401/ibmpc.h` | ChibiOS PAL macros + `palCallback` declaration |
+
+### ISR state machine — `isr_state` encoding
+
+`isr_state` is a 16-bit shift register; initial value `0x8000` is the sentinel. Each falling clock edge shifts one data bit into the MSB. Protocol is identified by the low byte when the sentinel reaches a known slot:
+
+| `isr_state & 0xFF` | Meaning |
+|---|---|
+| `0b00000000`, `0b10000000`, `0b01000000`, `0b00100000` | midway — keep receiving |
+| `0b11000000` | XT Clone done — extract byte, set `IBMPC_PROTOCOL_XT_CLONE` |
+| `0b11100000` | XT IBM error-done — extract byte, set `IBMPC_PROTOCOL_XT_ERROR` |
+| `0b10100000` | AT / XT_IBM ambiguity — wait for AT stop-bit edge to decide |
+| `0b??010000` | AT done — validate parity, check stop bit |
+| anything else | Illegal — set `IBMPC_ERR_ILLEGAL`, inhibit clock |
+
+### Correctness checklist for `ibmpc.c`
+
+When suggesting or reviewing changes to `ibmpc.c`, verify:
+
+- [ ] ISR timeout: `(uint8_t)(t - timer_start) > 10` (10 ms — not `>= 3` or `>= 5`)
+- [ ] AT parity check present in `case 0b??010000`: compute odd parity over b0–b7 + parity bit; set `IBMPC_ERR_PARITY_AA` for the special `isr_state == 0xAA90` case
+- [ ] `case 0b11000000` goes **directly** to XT_Clone-done — no clock-wait inside the ISR
+- [ ] `case 0b11100000` is a **separate** case for XT_IBM-error-done
+- [ ] `case 0b10100000` has `if (!protocol)` guard before the clock-wait
+- [ ] ISR ERROR path calls `clock_lo()` before resetting `isr_state` to `0x8000`
+- [ ] DONE path uses `goto END` — does not fall through to ERROR
+- [ ] `host_send()` returns `-1` immediately if `isr_state != 0x8000` (non-blocking)
+- [ ] `ibmpc_isr_debug = isr_state` is captured in the send error path before setting `IBMPC_ERR_SEND`
+
+### Debug logging conventions
+
+- `xprintf(...)` — always emitted; use for state machine transitions and keyboard identification
+- `dprintf(...)` — gated by `debug_enable = true`; use for per-byte protocol traffic (`w%02X sent`, `r%02X received`)
+- `CONSOLE_ENABLE = yes` in `rules.mk` during development; switch to `no` for production firmware

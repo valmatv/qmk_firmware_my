@@ -32,3 +32,29 @@
 - [ ] I have read the [**CONTRIBUTING** document](https://docs.qmk.fm/#/contributing).
 - [ ] I have added tests to cover my changes.
 - [ ] I have tested the changes and verified that they work and don't break anything (as well as I can manage).
+
+---
+
+<!--- Remove the section below if this PR does not touch keyboards/converter/ibmpc_usb/ -->
+
+## IBM PC USB Converter checklist
+
+**Build verification**
+- [ ] `qmk compile -kb converter/ibmpc_usb/promicro -km default` passes
+- [ ] `qmk compile -kb converter/ibmpc_usb/blackpill_f401 -km default` passes
+- [ ] `qmk compile -kb converter/ibmpc_usb/blackpill_f411 -km default` passes
+
+**Hardware test**
+- Controller used: <!--- Pro Micro / BlackPill F401 / BlackPill F411 -->
+- Keyboard tested: <!--- IBM Model M 101-key / XT 83-key / Terminal 122-key / etc. -->
+- Scan code set detected (from `qmk console`): <!--- PC_XT / PC_AT / PC_TERMINAL -->
+
+**Protocol correctness** (for changes to `ibmpc.c`)
+- [ ] ISR timeout is `> 10` ms
+- [ ] AT parity check present
+- [ ] `host_send()` returns `-1` immediately if ISR is busy (no spin-wait)
+- [ ] `clock_lo()` called in ISR ERROR path
+
+**Console output** — paste `qmk console` init sequence:
+```
+```

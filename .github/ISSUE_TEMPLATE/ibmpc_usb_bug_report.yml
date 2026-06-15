@@ -1,0 +1,81 @@
+name: IBM PC USB Converter — Bug Report
+description: Report a problem with the keyboards/converter/ibmpc_usb converter
+labels: ["bug", "converter/ibmpc_usb"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please fill in all fields — the console output is especially important for diagnosing protocol issues.
+
+  - type: dropdown
+    id: mcu
+    attributes:
+      label: Controller board
+      options:
+        - WeAct BlackPill STM32F401
+        - WeAct BlackPill STM32F411
+        - Pro Micro (ATmega32U4, Caterina)
+        - Pro Micro (ATmega32U4, QMK DFU)
+        - Other ATmega32U4
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: input
+    id: keyboard
+    attributes:
+      label: Keyboard model
+      description: "e.g. IBM Model M 101-key, IBM XT 83-key, IBM 5576-002, Cherry G80-2551"
+    validations:
+      required: true
+
+  - type: input
+    id: firmware
+    attributes:
+      label: QMK commit or firmware version
+      description: "Output of `qmk info` or the git commit hash"
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      description: |
+        Run `qmk console` while the converter is plugged in and paste the full output here.
+        This shows keyboard detection (ID, protocol, scan code set) and any error codes.
+      render: text
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scan_set
+    attributes:
+      label: Scan code set detected in console
+      description: "Look for ID:xxxx(PC_XT / PC_AT / PC_TERMINAL) in the console output"
+      options:
+        - PC_XT (Scan Code Set 1)
+        - PC_AT (Scan Code Set 2)
+        - PC_TERMINAL (Scan Code Set 3)
+        - Not detected / stuck at INIT
+        - Unknown
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional notes
+      description: Wiring diagram, oscilloscope captures, or anything else relevant

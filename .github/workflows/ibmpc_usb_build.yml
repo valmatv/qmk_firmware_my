@@ -1,0 +1,44 @@
+name: IBM PC USB Converter Build
+
+on:
+  push:
+    paths:
+      - 'keyboards/converter/ibmpc_usb/**'
+      - '.github/workflows/ibmpc_usb_build.yml'
+  pull_request:
+    paths:
+      - 'keyboards/converter/ibmpc_usb/**'
+      - '.github/workflows/ibmpc_usb_build.yml'
+
+jobs:
+  build:
+    name: Build ibmpc_usb targets
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/qmk/qmk_cli:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build promicro (ATmega32U4)
+        run: qmk compile -kb converter/ibmpc_usb/promicro -km default
+
+      - name: Build blackpill_f401 (STM32F401)
+        run: qmk compile -kb converter/ibmpc_usb/blackpill_f401 -km default
+
+      - name: Build blackpill_f411 (STM32F411)
+        run: qmk compile -kb converter/ibmpc_usb/blackpill_f411 -km default
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: ibmpc_usb-firmware
+          path: |
+            *.hex
+            *.bin
+            *.uf2
+          retention-days: 7

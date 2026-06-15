@@ -1,0 +1,52 @@
+name: IBM PC USB Converter — Keyboard Support Request
+description: Request support for a new keyboard or feature in the ibmpc_usb converter
+labels: ["enhancement", "converter/ibmpc_usb"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to request support for a new IBM-era keyboard or a new feature in the converter.
+
+  - type: input
+    id: keyboard
+    attributes:
+      label: Keyboard model
+      description: "e.g. IBM 3151 terminal keyboard, Unicomp Ultra Classic, DEC LK201"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: protocol
+    attributes:
+      label: Protocol / Scan Code Set
+      options:
+        - XT (Scan Code Set 1 — pre-AT IBM PC)
+        - AT / PS2 (Scan Code Set 2)
+        - Terminal (Scan Code Set 3 — IBM terminal, 122-key)
+        - Unknown / need help identifying
+    validations:
+      required: true
+
+  - type: input
+    id: keyboard_id
+    attributes:
+      label: Keyboard ID response (if known)
+      description: |
+        Connect the keyboard, run `qmk console`, look for `ID:xxxx` in the output.
+        Example: ID:AB85
+
+  - type: textarea
+    id: reference
+    attributes:
+      label: Reference material
+      description: |
+        TMK wiki links, datasheets, or other keyboards that use the same protocol.
+        TMK wiki: https://github.com/tmk/tmk_keyboard/wiki
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature or behaviour description
+      description: What should the converter do differently or additionally?
+    validations:
+      required: true
