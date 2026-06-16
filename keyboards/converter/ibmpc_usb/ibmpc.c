@@ -324,8 +324,6 @@ void ibmpc_interrupt_service_routine(void)
 
         case 0b10100000:    /* ^2: AT (b0=1) vs XT_IBM ambiguity */
             {
-                /* Skip the check if protocol is already known to be XT_IBM
-                 * (optimisation from TMK: avoids redundant edge-wait on multi-byte sequences) */
                 if (!ibmpc_protocol) {
                     uint8_t us = 100;
                     /* Wait for the AT stop-bit's rising then falling edge */
@@ -341,6 +339,9 @@ void ibmpc_interrupt_service_routine(void)
                         goto NEXT;
                     }
                     /* No stop-bit edge: XT_IBM done */
+                } else if (ibmpc_protocol & IBMPC_PROTOCOL_AT) {
+                    /* Already identified as AT — b0=1 midway, stop bit comes next */
+                    goto NEXT;
                 } else if (ibmpc_protocol == IBMPC_PROTOCOL_XT_IBM) {
                     /* Already identified as XT_IBM — skip the wait */
                 }
