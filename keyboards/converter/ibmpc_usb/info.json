@@ -3,9 +3,9 @@
     "manufacturer": "TMK",
     "maintainer": "valmatv",
     "usb": {
-        "vid": "0xFEED",
-        "pid": "0x6536",
-        "device_version": "1.0.1"
+        "vid": "0x1209",
+        "pid": "0x6464",
+        "device_version": "1.0.2"
     },
     "layouts": {
         "LAYOUT": {
